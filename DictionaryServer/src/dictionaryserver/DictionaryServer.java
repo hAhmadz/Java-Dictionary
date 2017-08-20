@@ -4,16 +4,18 @@
  * and open the template in the editor.
  */
 package dictionaryserver;
-
 /**
  *
  * @author Haaris
  */
 public class DictionaryServer 
 {
+    
+    
+    
     public static void main(String[] args) 
     {
-    
+        
     }
     
 }

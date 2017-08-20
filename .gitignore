@@ -1,2 +1,5 @@
 /DictionaryClient/nbproject/private/
 /DictionaryServer/nbproject/private/
+/DictionaryClient/build/
+/DictionaryServer/build/
+/DictionaryClient/dist/
