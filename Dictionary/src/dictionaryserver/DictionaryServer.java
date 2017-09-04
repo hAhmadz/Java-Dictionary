@@ -152,7 +152,6 @@ public class DictionaryServer extends Thread
         String fileName = "Dictionary.txt";
         String key = "";
         String value = "";
-
         try
         {
             FileReader fileReader = new FileReader(fileName);
@@ -182,13 +181,6 @@ public class DictionaryServer extends Thread
         return tempTable;
     }
 
-    
-    
-//    public void InitializeThread(Socket client)
-//    {
-//        myThread t = new myThread("Thread - " + counter , client);
-//        t.start(client);
-//    }
     void sendMessage(String msg)
     {
         try
@@ -223,61 +215,12 @@ public class DictionaryServer extends Thread
         {
             System.out.println(e);
         }
-        //****************
-        //****************Recent Functionality//
-//        try
-//        {
-//            providerSocket = new ServerSocket(port);
-//            System.out.println("Waiting for connection");
-//            connection = providerSocket.accept();
-//            System.out.println("Connection received from " + connection.getInetAddress().getHostName());
-//            out = new ObjectOutputStream(connection.getOutputStream());
-//            out.flush();
-//            in = new ObjectInputStream(connection.getInputStream());
-//            sendMessage("Connection successful");
-//            
-//            do
-//            {
-//                try
-//                {
-//                    message = (String) in.readObject();
-//                    System.out.println("client>" + message);
-//                    if (message.equals("bye"))
-//                    {
-//                        sendMessage("bye");
-//                    }
-//                }
-//                catch (ClassNotFoundException classnot)
-//                {
-//                    System.err.println("Data received in unknown format");
-//                }
-//            }
-//            while (!message.equals("bye"));
-//        }
-//        catch (IOException ioException)
-//        {
-//            ioException.printStackTrace();
-//        }
-//        finally
-//        {
-//            try
-//            {
-//                in.close();
-//                out.close();
-//                providerSocket.close();
-//            }
-//            catch (IOException ioException)
-//            {
-//                ioException.printStackTrace();
-//            }
-//        }
     }
 
     public static void main(String[] args)
     {
         DictionaryServer myServer = new DictionaryServer();
         myServer.Initialize(myServer, args);
-        
         while(true)
             myServer.StartServer(myServer);
     }
