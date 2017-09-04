@@ -362,7 +362,13 @@ public class DictionaryClient extends javax.swing.JFrame
                     OutputLabel2.setText(message);
                 else
                 {
-                    MeaningTextArea.setText(message);
+                    String[] MessageSplit = message.split("\\|");
+                    String Out = "";
+                    for(int i = 0; i < MessageSplit.length; i++)
+                    {
+                        Out = Out + "Meaning:" + (i+1) + "   " + MessageSplit[i] + "\n";
+                    }
+                    MeaningTextArea.setText(Out);
                 }
                     
             }
@@ -423,7 +429,7 @@ public class DictionaryClient extends javax.swing.JFrame
         String word = SearchwordField.getText();
         String meaning = MeaningTextArea.getText();
         String OutputMessage = "1" + "|" + word + "|" + meaning;
-        if (!meaning.isEmpty())
+        if (!meaning.isEmpty() && !(word.isEmpty()))
         {
             try (Socket socket = new Socket(host, port);)
             {
@@ -446,7 +452,7 @@ public class DictionaryClient extends javax.swing.JFrame
         }
         else
         {
-            OutputLabel2.setText("No Word Entered!");
+            OutputLabel2.setText("No Word / Meaning Entered!");
         }
     }//GEN-LAST:event_AddWordBtnActionPerformed
 

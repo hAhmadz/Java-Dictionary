@@ -95,11 +95,11 @@ public class DictionaryServer extends Thread
                 decision = "The word already exists!!";
             else
             {
-                DictionaryTable.put(word, meaning);
+                DictionaryTable.put(word, KeyMeaning + "|" + meaning);
                 decision = "Word Edited successfully!";
             }
-
         }
+        saveDictionaryState(DictionaryTable);
         return decision;
     }
 
@@ -142,7 +142,7 @@ public class DictionaryServer extends Thread
             Set<String> keys = DictionaryTable.keySet();
             for (String key : keys)
             {
-                bufferedWriter.write(key + ":" + DictionaryTable.get(key));
+                bufferedWriter.write(key + "<>" + DictionaryTable.get(key));
                 bufferedWriter.newLine();
             }
             bufferedWriter.close();
@@ -168,7 +168,7 @@ public class DictionaryServer extends Thread
 
             while ((line = bufferedReader.readLine()) != null)
             {
-                String[] initialStringSplit = line.split(":");
+                String[] initialStringSplit = line.split("<>");
                 key = initialStringSplit[0];
                 value = initialStringSplit[1];
 
