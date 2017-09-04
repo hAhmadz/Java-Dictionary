@@ -15,8 +15,8 @@ public class myThread extends Thread
     int clientNo;
     int squre;
     DictionaryServer DS;
-    
-    myThread(Socket inSocket, int counter,DictionaryServer DicS)
+
+    myThread(Socket inSocket, int counter, DictionaryServer DicS)
     {
         serverClient = inSocket;
         clientNo = counter;
@@ -25,36 +25,36 @@ public class myThread extends Thread
 
     public void run()
     {
-        try
+        String Message = "";
+        String OutputMessage = "";
+        try (Socket clientSocket = serverClient)
         {
-            DataInputStream inStream = new DataInputStream(serverClient.getInputStream());
-            DataOutputStream outStream = new DataOutputStream(serverClient.getOutputStream());
-            String clientMessage = "";
-            String serverMessage = "";
+            DataInputStream input = new DataInputStream(clientSocket.getInputStream());
+            Message = input.readUTF();
+            String[] SplitMessages = Message.split("\\|");
             
-            while(true)
-            {
-                clientMessage = inStream.readUTF();
-                if(clientMessage.equals("pinging"))
-                {
-                    outStream.writeUTF("pinging");
-                    outStream.flush();
-                }
-                outStream.flush();
+            if(SplitMessages[0].equals("1"))
+            {   //Add Word
+                synchronized(DS){ OutputMessage = DS.AddWordRequest(SplitMessages[1],SplitMessages[2]);}
             }
+            else if(SplitMessages[0].equals("2"))
+            {   //Delete Word
+                synchronized(DS){ OutputMessage = DS.DeleteWordRequest(SplitMessages[1]);}
+            }
+            else if(SplitMessages[0].equals("3"))
+            {   //Search Word
+                synchronized(DS){ OutputMessage = DS.SearchWordRequest(SplitMessages[1]);}
+            }
+            else if(SplitMessages[0].equals("4"))
+            {   //Ping
+                synchronized(DS){ OutputMessage = DS.PingRequest(SplitMessages[0]);}
+            }
+            DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
+            output.writeUTF(OutputMessage); 
         }
-        catch (Exception ex)
+        catch (IOException e)
         {
-            System.out.println(ex);
+            e.printStackTrace();
         }
-        finally
-        {
-            System.out.println("Client -" + clientNo + " exit!! ");
-        }
-    }
-    public void start () 
-    {
-        System.out.println("Starting ");
-    }
-     
+    } 
 }

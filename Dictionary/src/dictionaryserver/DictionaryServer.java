@@ -86,9 +86,20 @@ public class DictionaryServer extends Thread
         {
             DictionaryTable.put(word, meaning);
             decision = "Word Successfully added";
+            saveDictionaryState(DictionaryTable);
         }
         else
-            decision = "The word already exists!!";
+        {
+            String KeyMeaning = (String)DictionaryTable.get(word);
+            if(KeyMeaning.equals(meaning))
+                decision = "The word already exists!!";
+            else
+            {
+                DictionaryTable.put(word, meaning);
+                decision = "Word Edited successfully!";
+            }
+
+        }
         return decision;
     }
 
@@ -99,10 +110,10 @@ public class DictionaryServer extends Thread
         {
             DictionaryTable.remove(word);
             decision = "The word has been deleted successfully.";
+            saveDictionaryState(DictionaryTable);
         }
         else
             decision = "The word does not exist in the dictionary!";
-        
         return decision;
     }
 
@@ -116,11 +127,9 @@ public class DictionaryServer extends Thread
         return decision;
     }
 
-    public void PingRequest(String input)
+    public String PingRequest(String input)
     {
-        // Server receives a message from the client and sends back the same message to the client in this function.
-        
-        
+       return "Ping Check"; 
     }
 
     public synchronized void saveDictionaryState(Hashtable DictionaryTable)
@@ -206,7 +215,7 @@ public class DictionaryServer extends Thread
             {
                 counter++;
                 conn = soc.accept();  //server accept the client connection request
-                System.out.println("Client No:" + counter + " started!");
+                System.out.println("Client sent a query");
                 myThread sct = new myThread(conn, counter, myServer); //send  the request to a separate thread
                 sct.start();
             }
@@ -221,7 +230,6 @@ public class DictionaryServer extends Thread
     {
         DictionaryServer myServer = new DictionaryServer();
         myServer.Initialize(myServer, args);
-        while(true)
-            myServer.StartServer(myServer);
+        myServer.StartServer(myServer);
     }
 }
