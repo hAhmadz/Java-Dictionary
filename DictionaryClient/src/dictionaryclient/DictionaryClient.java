@@ -1,10 +1,15 @@
 package dictionaryclient;
+
 import java.awt.Color;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.rmi.UnknownHostException;
+import javax.swing.SwingUtilities;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -21,36 +26,43 @@ Delete: 2
 Search: 3
 Ping:   4
 
-*/
-
-
-public class DictionaryClient extends javax.swing.JFrame 
+ */
+public class DictionaryClient extends javax.swing.JFrame
 {
+
+    Socket sc;
+    DataInputStream inStream;
+    DataOutputStream outStream;
+    BufferedReader br;
     Boolean ConnectionStatus;
-    Socket clientSoc;
-    @Option(required = true, name = "-h", aliases = {"--host"}, usage = "Hostname")
+    String message;
+    @Option(required = true, name = "-h", aliases =
+    {
+        "--host"
+    }, usage = "Hostname")
     String host;
 
     @Option(required = false, name = "-p", usage = "Port number")
     int port;
-    
-    public DictionaryClient() 
+
+    public DictionaryClient()
     {
         initComponents();
         ConnectionStatus = false;
-        clientSoc = null;
+        OutputLabel.setForeground(Color.RED);
+        OutputLabel.setText("Disconnected");
     }
-    
-    public String getHost() 
+
+    public String getHost()
     {
         return host;
     }
 
-    public int getPort() 
+    public int getPort()
     {
         return port;
     }
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -314,86 +326,213 @@ public class DictionaryClient extends javax.swing.JFrame
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void InitializeConnection(String HostNameValue ,int portValue)
+    public void ConnectionExit()
+    {
+        ConnectionMessagePackage("exit", 5);
+    }
+
+    private void InitializeConnection(String HostNameValue, int portValue)
     {
         //Starts the connection by default
         portTextBox.setText(Integer.toString(portValue));
         machineTextBox.setText(HostNameValue);
-    
-        try(Socket socket = new Socket(HostNameValue, port);)
-            {
-//                DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-//                output.writeUTF("I want to connect!");
-//                output.flush();
-                
-                DataInputStream input = new DataInputStream(socket.getInputStream());
-                String message = input.readUTF();
-                System.out.println(message);
-                ConnectionStatus = true; // if connection successful
-            } 
-            catch (UnknownHostException e) 
-            {
-                e.printStackTrace();
-            } 
-            catch (IOException e) 
-            {
 
+        try
+        {
+            sc = new Socket(HostNameValue, portValue);
+            inStream = new DataInputStream(sc.getInputStream());
+            outStream = new DataOutputStream(sc.getOutputStream());
+            br = new BufferedReader(new InputStreamReader(System.in));
+            String clientMessage = "";
+            String serverMessage = "";
+
+            System.out.println("Enter Initial Message:");
+            clientMessage = br.readLine();
+            outStream.writeUTF(clientMessage);
+            outStream.flush();
+            serverMessage = inStream.readUTF();
+            System.out.println(serverMessage);
+
+            outStream.close();
+        }
+        catch (Exception e)
+        {
+            System.out.println(e);
+        }
+
+        /*
+        **************************
+        **************************Recent Function
+        **************************
+        try
+        {
+            String MachineName = "4000p2t17321206";
+            int port = 4433;
+            clientSoc = new Socket(MachineName, port);
+            System.out.println("Connected to localhost in port 2004");
+            out = new ObjectOutputStream(clientSoc.getOutputStream());
+            out.flush();
+            in = new ObjectInputStream(clientSoc.getInputStream());
+            OutputLabel.setForeground(Color.green);
+            OutputLabel.setText("Connected");
+            do
+            {
+                try
+                {
+                    message = (String) in.readObject();
+                    System.out.println("server>" + message);
+                    sendMessage("Hi my server");
+                }
+                catch (ClassNotFoundException classNot)
+                {
+                    System.err.println("data received in unknown format");
+                }
             }
+            while (!message.equals("bye"));
+        }
+        catch (java.net.UnknownHostException unknownHost)
+        {
+            System.err.println("You are trying to connect to an unknown host!");
+        }
+        catch (IOException ioException)
+        {
+            ioException.printStackTrace();
+        }
+        finally
+        {
+            try
+            {
+                in.close();
+                out.close();
+                clientSoc.close();
+                OutputLabel.setForeground(Color.RED);
+                OutputLabel.setText("Disconnected");
+            }
+            catch (IOException ioException)
+            {
+                ioException.printStackTrace();
+            }
+        }
+**********************************************************************************************************************************
+         */
+        //old func
+//        Socket s1 = null;
+//        String line = null;
+//        BufferedReader br = null;
+//        BufferedReader is = null;
+//        PrintWriter os = null;
+//
+//        try
+//        {
+//            s1 = new Socket(HostNameValue, portValue); // You can use static final constant PORT_NUM
+//            br = new BufferedReader(new InputStreamReader(System.in));
+//            is = new BufferedReader(new InputStreamReader(s1.getInputStream()));
+//            os = new PrintWriter(s1.getOutputStream());
+//            OutputLabel.setForeground(Color.green);
+//            OutputLabel.setText("Connected");
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//            System.err.print("IO Exception");
+//        }
+//        
+//        System.out.println("Client Address : 1");
+//        System.out.println("Enter Data to echo Server ( Enter QUIT to end ):");
+//        String response = null;
+//        try
+//        {
+//            line = br.readLine();
+//            while (line.compareTo("QUIT") != 0) 
+//            {
+//                os.println(line);
+//                os.flush();
+//                response = is.readLine();
+//                System.out.println("Server Response : " + response);
+//                line = br.readLine();
+//            }
+//        }
+//        catch (IOException e)
+//        {
+//            e.printStackTrace();
+//            System.out.println("Socket read Error");
+//        }
+//        finally
+//        {
+//            is.close();
+//            os.close();
+//            br.close();
+//            s1.close();
+//            System.out.println("Connection Closed");
+//        }
     }
-    
-    public void InitializeArguments(DictionaryClient myClient,String[] args)
+
+//    void sendMessage(String msg)
+//    {
+//        try
+//        {
+//            out.writeObject(msg);
+//            out.flush();
+//            System.out.println("client>" + msg);
+//        }
+//        catch (IOException ioException)
+//        {
+//            ioException.printStackTrace();
+//        }
+//    }
+    public void InitializeArguments(DictionaryClient myClient, String[] args)
     {
+
         CmdLineParser parser = new CmdLineParser(myClient);
-        try 
+        try
         {
             parser.parseArgument(args);
             myClient.InitializeConnection(myClient.getHost(), myClient.getPort());
         }
-        catch (CmdLineException e) 
+        catch (CmdLineException e)
         {
             System.err.println(e.getMessage());
             parser.printUsage(System.err);
             System.exit(0); //exits if no proper arguments
         }
     }
-    
+
     private void ConnectionMessagePackage(String line, int option)
     {
-        if(option == 1)
+        if (option == 1)
         {
             //Add
-            
+
         }
-        else if(option == 2)
+        else if (option == 2)
         {
             //Delete
-        
+
         }
-        else if(option == 3)
+        else if (option == 3)
         {
             //Search
-            
-            
+
         }
-        else if(option == 4)
+        else if (option == 4)
         {
             // Ping
         }
-        else if(option == 5)
+        else if (option == 5)
         {
             // exit message
         }
     }
-    
-    
+
+
     private void SearchBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SearchBtnActionPerformed
         //word to be searched
         String searchWord = SearchwordField.getText();
-        if(this.ConnectionStatus == true)
+        if (this.ConnectionStatus == true)
         {
-            if(!searchWord.isEmpty())
+            if (!searchWord.isEmpty())
             {
-                ConnectionMessagePackage(searchWord,3);
+                ConnectionMessagePackage(searchWord, 3);
             }
             else
             {
@@ -410,24 +549,24 @@ public class DictionaryClient extends javax.swing.JFrame
         //all clear button
         SearchwordField.setText(null);
         MeaningTextArea.setText(null);
-        
+
     }//GEN-LAST:event_ClearBtnActionPerformed
 
     private void deleteWordBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteWordBtnActionPerformed
         //word to be deleted: 
         String word = SearchwordField.getText();
-        if(!word.isEmpty())
+        if (!word.isEmpty())
         {
-            
+
         }
-         
+
     }//GEN-LAST:event_deleteWordBtnActionPerformed
 
     private void AddWordBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddWordBtnActionPerformed
         String word = SearchwordField.getText();
         String meaning = MeaningTextArea.getText();
-        
-        if(!meaning.isEmpty())
+
+        if (!meaning.isEmpty())
         {
             //add word request.
         }
@@ -435,22 +574,53 @@ public class DictionaryClient extends javax.swing.JFrame
 
     private void connectBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectBtnActionPerformed
         //If already connected, then do not do anything.
-        if(ConnectionStatus == false)
+        if (ConnectionStatus == false)
         {
             int portNumber = Integer.parseInt(portTextBox.getText());
             String machine = machineTextBox.getText();
-            this.InitializeConnection(machine , portNumber);
+            //this.InitializeConnection(machine, portNumber);
         }
         else
         {
-        
+
         }
-            // open a dialogbox, saying already connected.
+        // open a dialogbox, saying already connected.
     }//GEN-LAST:event_connectBtnActionPerformed
 
     private void pingBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pingBtnActionPerformed
-        String portNumber = portTextBox.getText();
-        String machine = machineTextBox.getText();
+
+        int a = 0;
+        new Thread()
+        {
+            String clientMessage = "";
+            String serverMessage = "";
+
+            public void run()
+            {
+                try
+                {
+                    DataInputStream inStream = new DataInputStream(sc.getInputStream());
+                    DataOutputStream outStream = new DataOutputStream(sc.getOutputStream());
+                    clientMessage = "pinging";
+                    outStream.writeUTF(clientMessage);
+                    outStream.flush();
+
+                    serverMessage = inStream.readUTF();
+                    if (serverMessage == clientMessage)
+                    {
+                        System.exit(0);
+                    }
+
+                    inStream.close();
+                    outStream.close();
+                }
+                catch (Exception e)
+                {
+                    System.out.println(e);
+                }
+            }
+        }.start();
+
         //ping a message to the server and return a message from the server.
     }//GEN-LAST:event_pingBtnActionPerformed
 
@@ -459,42 +629,38 @@ public class DictionaryClient extends javax.swing.JFrame
         //break the connection and clear the textboxes.
         portTextBox.setText("");
         machineTextBox.setText("");
-        if ( this.clientSoc != null ) 
-            try 
-            {
-                this.clientSoc.close();
-                OutputLabel.setForeground(Color.RED);
-                OutputLabel.setText("Disconnected");
-                this.ConnectionStatus = false;
-            }
-            catch( IOException ex )
-            {
-                
-            }        
+
     }//GEN-LAST:event_disconnectBtnActionPerformed
 
-    
-    public void ConnectionExit()
+    public static void main(String args[])
     {
-        ConnectionMessagePackage("exit",5);
-    }
-    
-    
-    
-    
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                DictionaryClient myClient = new DictionaryClient();
-                myClient.InitializeArguments(myClient,args);
+        DictionaryClient myClient = new DictionaryClient();
+        java.awt.EventQueue.invokeLater(new Runnable()
+        {
+            public void run()
+            {
                 myClient.setVisible(true);
-                
             }
-            
+
         });
+
+        new Thread()
+        {
+            public void run()
+            {
+                try
+                {
+                    myClient.InitializeArguments(myClient, args);
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton AddWordBtn;
     private javax.swing.JButton ClearBtn;

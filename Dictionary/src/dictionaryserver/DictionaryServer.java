@@ -1,4 +1,5 @@
 package dictionaryserver;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -7,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -30,93 +33,100 @@ Add:    1
 Delete: 2
 Search: 3
 Ping:   4
-*/
-
-public class DictionaryServer 
+ */
+public class DictionaryServer extends Thread
 {
+
     //Variables
     private Hashtable DictionaryTable;
     private static int counter = 0;
-    
-    @Option(required = true, name = "-h", aliases = {"--host"}, usage = "Hostname")
+    ServerSocket soc;
+    Socket conn;
+    ObjectOutputStream out;
+    ObjectInputStream in;
+    String message;
+
+    @Option(required = true, name = "-h", aliases =
+    {
+        "--host"
+    }, usage = "Hostname")
     String host;
 
     @Option(required = false, name = "-p", usage = "Port number")
     int port;
 
-    public void Initialize(DictionaryServer myServer,String[] args)
+    public void Initialize(DictionaryServer myServer, String[] args)
     {
         CmdLineParser parser = new CmdLineParser(myServer);
-        try 
+        try
         {
             parser.parseArgument(args);
         }
-        catch (CmdLineException e) 
+        catch (CmdLineException e)
         {
             System.err.println(e.getMessage());
             parser.printUsage(System.err);
             System.exit(0);
         }
-        
+
         this.DictionaryTable = new Hashtable();
         DictionaryTable = getDictionaryState();
-        
     }
+
+    public void StopServer() throws IOException
+    {
+        soc.close();
+        conn.close();
+    }
+    
     public synchronized String AddWordRequest(String word, String meaning)
     {
         String decision = "";
-        if(true)
-        { 
-            //word already exists
-
+        if (!DictionaryTable.containsKey(word))
+        {
+            DictionaryTable.put(word, meaning);
+            decision = "Word Successfully added";
         }
         else
-        {
-            //send add word request.
-        }
+            decision = "The word already exists!!";
         return decision;
     }
-    
+
     public synchronized String DeleteWordRequest(String word)
     {
         String decision = "";
-        if(true)
-        { 
-            //word exists, delete it
-
+        if (DictionaryTable.containsKey(word))
+        {
+            DictionaryTable.remove(word);
+            decision = "The word has been deleted successfully.";
         }
         else
-        {
-            //word does not exist.
-        }
+            decision = "The word does not exist in the dictionary!";
+        
         return decision;
     }
+
     public String SearchWordRequest(String word)
     {
-        String output = "";
-        //Searches a word in the hashtable and sends it back.
-        if(true)//word exists
-        {
-            //send search word request along with meaning
-        }
+        String decision = "";
+        if (DictionaryTable.containsKey(word))
+            decision = (String)DictionaryTable.get(word);
         else
-        {
-            //open a dialog box that the word does not exist
-        }
-        return output;
+            decision = "The word does not exist in the dictionary";
+        return decision;
     }
+
     public void PingRequest(String input)
     {
-        // Server receives a message and sends back a default reply.
+        // Server receives a message from the client and sends back the same message to the client in this function.
+        
         
     }
-    
-    
+
     public synchronized void saveDictionaryState(Hashtable DictionaryTable)
     {
-        //saves the dictionary 
         String fileName = "Dictionary.txt";
-        try 
+        try
         {
             FileWriter fileWriter = new FileWriter(fileName);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -128,12 +138,12 @@ public class DictionaryServer
             }
             bufferedWriter.close();
         }
-        catch(IOException ex) 
+        catch (IOException ex)
         {
             System.out.println("Error writing to file '" + fileName + "'");
         }
     }
-    
+
     public Hashtable getDictionaryState()
     {
         //retrieves the dictionary
@@ -142,125 +152,133 @@ public class DictionaryServer
         String fileName = "Dictionary.txt";
         String key = "";
         String value = "";
-        
-        try 
+
+        try
         {
             FileReader fileReader = new FileReader(fileName);
             BufferedReader bufferedReader = new BufferedReader(fileReader);
 
-            while((line = bufferedReader.readLine()) != null) 
+            while ((line = bufferedReader.readLine()) != null)
             {
                 String[] initialStringSplit = line.split(":");
                 key = initialStringSplit[0];
                 value = initialStringSplit[1];
-                
-                if(!tempTable.contains(key))
+
+                if (!tempTable.contains(key))
+                {
                     tempTable.put(key, value);
+                }
             }
-            bufferedReader.close();         
+            bufferedReader.close();
         }
-        catch(FileNotFoundException ex) 
+        catch (FileNotFoundException ex)
         {
             //Nothing in this, default case is new file creation
         }
-        catch(IOException ex) 
+        catch (IOException ex)
         {
-            System.out.println( "Error reading file '" + fileName + "'");                  
+            System.out.println("Error reading file '" + fileName + "'");
         }
         return tempTable;
     }
+
     
-    public void InitializeThread(Socket client)
-    {
-        myThread t = new myThread("Thread - " + counter);
-        t.start(client);
-    }
     
-    public void StartServer(int value)
+//    public void InitializeThread(Socket client)
+//    {
+//        myThread t = new myThread("Thread - " + counter , client);
+//        t.start(client);
+//    }
+    void sendMessage(String msg)
     {
-        if(value == 1)// TCP Start
+        try
         {
-            try(ServerSocket serversoc = new ServerSocket(port))
+            out.writeObject(msg);
+            out.flush();
+            System.out.println("server>" + msg);
+        }
+        catch (IOException ioException)
+        {
+            ioException.printStackTrace();
+        }
+    }
+
+    public void StartServer(DictionaryServer myServer)
+    {
+        try
+        {
+            soc = new ServerSocket(port);
+            int counter = 0;
+            System.out.println("Server Started ....");
+            while (true)
             {
-                System.out.println("Waiting for client connection..");
-                while(true)
-                {
-                    Socket client = serversoc.accept();
-                    counter++;
-                    System.out.println("Client " + counter + ": Applying for connection!");
-                    
-                    InitializeThread(client);
-                }
+                counter++;
+                conn = soc.accept();  //server accept the client connection request
+                System.out.println("Client No:" + counter + " started!");
+                myThread sct = new myThread(conn, counter, myServer); //send  the request to a separate thread
+                sct.start();
             }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-            
-//            ServerSocket soc = new ServerSocket(port);
-//            Socket s1 = soc.accept(); //waiting for and accepting a connection.
-//
-//            OutputStream s1out = s1.getOutputStream();
-//            DataOutputStream dos = new DataOutputStream(s1out);
-//
-//            dos.writeUTF("Hello");
-//
-//            dos.close();
-//            s1out.close();
-//            s1.close();
-            
-            
-            
-//            private static void serveClient(Socket client)
+        }
+        catch (Exception e)
+        {
+            System.out.println(e);
+        }
+        //****************
+        //****************Recent Functionality//
+//        try
+//        {
+//            providerSocket = new ServerSocket(port);
+//            System.out.println("Waiting for connection");
+//            connection = providerSocket.accept();
+//            System.out.println("Connection received from " + connection.getInetAddress().getHostName());
+//            out = new ObjectOutputStream(connection.getOutputStream());
+//            out.flush();
+//            in = new ObjectInputStream(connection.getInputStream());
+//            sendMessage("Connection successful");
+//            
+//            do
 //            {
-//                try(Socket clientSocket = client)
+//                try
 //                {
-//                    DataInputStream input = new DataInputStream(clientSocket.getInputStream());
-//                    DataOutputStream output = new DataOutputStream(clientSocket.getOutputStream());
-//                    System.out.println("CLIENT: "+input.readUTF());
-//                    output.writeUTF("Server: Hi Client "+counter+" !!!");
-//                }        
-//                catch (IOException e)
+//                    message = (String) in.readObject();
+//                    System.out.println("client>" + message);
+//                    if (message.equals("bye"))
+//                    {
+//                        sendMessage("bye");
+//                    }
+//                }
+//                catch (ClassNotFoundException classnot)
 //                {
-//                    e.printStackTrace();
+//                    System.err.println("Data received in unknown format");
 //                }
 //            }
-        
-            //main func
-//                ServerSocketFactory factory = ServerSocketFactory.getDefault();
-//                try(ServerSocket server = factory.createServerSocket(port))
-//                {
-//                    System.out.println("Waiting for client connection..");
-//                    while(true)
-//                    {
-//                        Socket client = server.accept();
-//                        counter++;
-//                        System.out.println("Client "+counter+": Applying for connection!");
-//                        Thread t = new Thread(() -> serveClient(client));
-//                        t.start();
-//                    }
-//                } 
-//                catch (IOException e)
-//                {
-//                    e.printStackTrace();
-//                }
-        }
-        else if(value == 2)//UDP Start
-        {
-            
-        }
+//            while (!message.equals("bye"));
+//        }
+//        catch (IOException ioException)
+//        {
+//            ioException.printStackTrace();
+//        }
+//        finally
+//        {
+//            try
+//            {
+//                in.close();
+//                out.close();
+//                providerSocket.close();
+//            }
+//            catch (IOException ioException)
+//            {
+//                ioException.printStackTrace();
+//            }
+//        }
     }
-    
-    
-    public static void main(String[] args) 
+
+    public static void main(String[] args)
     {
         DictionaryServer myServer = new DictionaryServer();
-        myServer.Initialize(myServer,args);
+        myServer.Initialize(myServer, args);
         
-        
-        
-        //1 for TCP Server connection
-        //2 for UDP Server connection
-        myServer.StartServer(1);
+        while(true)
+            myServer.StartServer(myServer);
     }
 }
