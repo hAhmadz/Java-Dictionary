@@ -2,42 +2,22 @@ package dictionaryserver;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Set;
-import javax.net.ServerSocketFactory;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
-//Server checklists
-/*
-1. Implement Save State in file - Done
-2. Implement Retrieval State through file - Done
-3. Implement Server side sockets - 
-4. Implement Server Threading - 
-
-
-Requests Codes from clients:
-Add:    1
-Delete: 2
-Search: 3
-Ping:   4
- */
 public class DictionaryServer extends Thread
 {
-
-    //Variables
     private Hashtable DictionaryTable;
     private static int counter = 0;
     ServerSocket soc;
@@ -79,7 +59,7 @@ public class DictionaryServer extends Thread
         conn.close();
     }
     
-    public synchronized String AddWordRequest(String word, String meaning)
+    public String AddWordRequest(String word, String meaning)
     {
         String decision = "";
         if (!DictionaryTable.containsKey(word))
@@ -103,7 +83,7 @@ public class DictionaryServer extends Thread
         return decision;
     }
 
-    public synchronized String DeleteWordRequest(String word)
+    public String DeleteWordRequest(String word)
     {
         String decision = "";
         if (DictionaryTable.containsKey(word))
@@ -132,7 +112,7 @@ public class DictionaryServer extends Thread
        return "Ping Check"; 
     }
 
-    public synchronized void saveDictionaryState(Hashtable DictionaryTable)
+    public void saveDictionaryState(Hashtable DictionaryTable)
     {
         String fileName = "Dictionary.txt";
         try
