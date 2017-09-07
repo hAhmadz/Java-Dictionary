@@ -1,6 +1,5 @@
 package dictionaryclient;
 
-import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -8,27 +7,16 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.rmi.UnknownHostException;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DictionaryClient extends javax.swing.JFrame
 {
-
     Socket sc;
-    DataInputStream inStream;
-    DataOutputStream outStream;
-    BufferedReader br;
     String message;
-    @Option(required = true, name = "-h", aliases =
-    {
-        "--host"
-    }, usage = "Hostname")
     String host;
-
-    @Option(required = false, name = "-p", usage = "Port number")
     int port;
-
+    
     public DictionaryClient()
     {
         initComponents();
@@ -72,6 +60,7 @@ public class DictionaryClient extends javax.swing.JFrame
         OutputLabel = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         OutputLabel2 = new javax.swing.JTextPane();
+        dcBtn = new javax.swing.JButton();
 
         javax.swing.GroupLayout jDialog1Layout = new javax.swing.GroupLayout(jDialog1.getContentPane());
         jDialog1.getContentPane().setLayout(jDialog1Layout);
@@ -274,6 +263,7 @@ public class DictionaryClient extends javax.swing.JFrame
 
         OutputLabel.setFont(new java.awt.Font("Tahoma", 0, 36)); // NOI18N
 
+        OutputLabel2.setEditable(false);
         OutputLabel2.setBackground(new java.awt.Color(204, 204, 204));
         OutputLabel2.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         OutputLabel2.setToolTipText("Output");
@@ -310,23 +300,34 @@ public class DictionaryClient extends javax.swing.JFrame
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addGap(13, 13, 13)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(pingBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(27, 27, 27))
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(41, 41, 41)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(portTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(29, 29, 29)
-                .addComponent(OutputLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(machineTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel6))
-                .addGap(0, 37, Short.MAX_VALUE))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(portTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(29, 29, 29)
+                        .addComponent(OutputLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(machineTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel6))
+                        .addGap(0, 37, Short.MAX_VALUE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pingBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(27, 27, 27))))
         );
+
+        dcBtn.setText("Disconnect");
+        dcBtn.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                dcBtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -341,13 +342,17 @@ public class DictionaryClient extends javax.swing.JFrame
             .addGroup(layout.createSequentialGroup()
                 .addGap(23, 23, 23)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 582, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(dcBtn)
+                .addGap(30, 30, 30))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(19, 19, 19)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dcBtn))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -359,18 +364,15 @@ public class DictionaryClient extends javax.swing.JFrame
     }// </editor-fold>//GEN-END:initComponents
     public void InitializeArguments(DictionaryClient myClient, String[] args)
     {
-        CmdLineParser parser = new CmdLineParser(myClient);
-        try
+        if(args.length<2)
         {
-            parser.parseArgument(args);
-            portTextBox.setText(Integer.toString(getPort()));
-            machineTextBox.setText(getHost());
+            System.out.println("Insufficient arguments.");
+            System.exit(0);
         }
-        catch (CmdLineException e)
+        else
         {
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
-            System.exit(0); //exits if no proper arguments
+            this.host = args[0];
+            this.port = Integer.parseInt(args[1]);
         }
     }
 
@@ -380,32 +382,31 @@ public class DictionaryClient extends javax.swing.JFrame
         String OutputMessage = "3" + "|" + searchWord;
         if (!searchWord.isEmpty())
         {
-            try (Socket socket = new Socket(host, port);)
+            try
             {
-                DataInputStream input = new DataInputStream(socket.getInputStream());
-                DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+                sc = new Socket(host, port);
+                DataInputStream input = new DataInputStream(sc.getInputStream());
+                DataOutputStream output = new DataOutputStream(sc.getOutputStream());
                 output.writeUTF(OutputMessage);
                 output.flush();
                 String message = input.readUTF();
                 SearchwordField.setText(searchWord);
-                
-                if(message.equals("The word does not exist in the dictionary"))
+
+                if (message.equals("The word does not exist in the dictionary"))
+                {
                     OutputLabel2.setText(message);
+                }
                 else
                 {
                     String[] MessageSplit = message.split("\\|");
                     String Out = "";
-                    for(int i = 0; i < MessageSplit.length; i++)
+                    for (int i = 0; i < MessageSplit.length; i++)
                     {
-                        Out = Out + "Meaning:" + (i+1) + "   " + MessageSplit[i] + "\n";
+                        Out = Out + "Meaning:" + (i + 1) + "   " + MessageSplit[i] + "\n";
                     }
                     MeaningTextArea1.setText(Out);
                 }
-                    
-            }
-            catch (UnknownHostException e)
-            {
-                OutputLabel2.setText("No Connection");
+                sc.close();
             }
             catch (IOException e)
             {
@@ -416,7 +417,7 @@ public class DictionaryClient extends javax.swing.JFrame
         {
             OutputLabel2.setText("No word Entered!");
         }
-        
+
     }//GEN-LAST:event_SearchBtnActionPerformed
 
     private void ClearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ClearBtnActionPerformed
@@ -433,19 +434,17 @@ public class DictionaryClient extends javax.swing.JFrame
         String OutputMessage = "2" + "|" + word;
         if (!word.isEmpty())
         {
-            try (Socket socket = new Socket(host, port);)
+            try
             {
-                DataInputStream input = new DataInputStream(socket.getInputStream());
-                DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+                sc = new Socket(host, port);
+                DataInputStream input = new DataInputStream(sc.getInputStream());
+                DataOutputStream output = new DataOutputStream(sc.getOutputStream());
                 output.writeUTF(OutputMessage);
                 output.flush();
                 OutputLabel2.setText(input.readUTF());
                 SearchwordField.setText(null);
                 MeaningTextArea.setText(null);
-            }
-            catch (UnknownHostException e)
-            {
-                OutputLabel2.setText("No Connection");
+                sc.close();
             }
             catch (IOException e)
             {
@@ -453,7 +452,9 @@ public class DictionaryClient extends javax.swing.JFrame
             }
         }
         else
+        {
             OutputLabel2.setText("No Word Entered!");
+        }
 
     }//GEN-LAST:event_deleteWordBtnActionPerformed
 
@@ -463,19 +464,17 @@ public class DictionaryClient extends javax.swing.JFrame
         String OutputMessage = "1" + "|" + word + "|" + meaning;
         if (!meaning.isEmpty() && !(word.isEmpty()))
         {
-            try (Socket socket = new Socket(host, port);)
+            try
             {
-                DataInputStream input = new DataInputStream(socket.getInputStream());
-                DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+                sc = new Socket(host,port);
+                DataInputStream input = new DataInputStream(sc.getInputStream());
+                DataOutputStream output = new DataOutputStream(sc.getOutputStream());
                 output.writeUTF(OutputMessage);
                 output.flush();
                 OutputLabel2.setText(input.readUTF());
                 SearchwordField.setText(null);
                 MeaningTextArea.setText(null);
-            }
-            catch (UnknownHostException e)
-            {
-                OutputLabel2.setText("No Connection");
+                sc.close();
             }
             catch (IOException e)
             {
@@ -493,54 +492,79 @@ public class DictionaryClient extends javax.swing.JFrame
         int portNumber = Integer.parseInt(portTextBox.getText());
         String hostName = machineTextBox.getText();
         String clientMessage = "Ping Check";
-        try (Socket socket = new Socket(hostName, portNumber);)
+        try
         {
-            DataInputStream input = new DataInputStream(socket.getInputStream());
-            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+            sc = new Socket(hostName,portNumber);
+            DataInputStream input = new DataInputStream(sc.getInputStream());
+            DataOutputStream output = new DataOutputStream(sc.getOutputStream());
             output.writeUTF("4|" + clientMessage);
             output.flush();
             String message = input.readUTF();
-            
             if (message.equals(clientMessage))
             {
                 OutputLabel2.setText("Ping Successful");
             }
-        }
-        catch (UnknownHostException e)
-        {
-            OutputLabel2.setText("No Connection");
-            
+            sc.close();
         }
         catch (IOException e)
         {
-            OutputLabel2.setText("Connection Issues");
+           OutputLabel2.setText("Ping Unsuccessful");
         }
+
         //ping a message to the server and return a message from the server.
     }//GEN-LAST:event_pingBtnActionPerformed
 
     private void SearchwordFieldMouseClicked(java.awt.event.MouseEvent evt)//GEN-FIRST:event_SearchwordFieldMouseClicked
     {//GEN-HEADEREND:event_SearchwordFieldMouseClicked
-            MeaningTextArea1.setText(null);
+        SearchwordField.setText(null);
+        MeaningTextArea1.setText(null);
+        OutputLabel2.setText(null);
     }//GEN-LAST:event_SearchwordFieldMouseClicked
+
+    private void dcBtnActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_dcBtnActionPerformed
+    {//GEN-HEADEREND:event_dcBtnActionPerformed
+        try
+        {
+            sc = new Socket(host,port);
+            DataOutputStream output = new DataOutputStream(sc.getOutputStream());
+            output.writeUTF("5|" + "");
+            output.flush();
+            sc.close();
+        }
+        catch (UnknownHostException e)
+        {
+            OutputLabel2.setText("No Connection");
+        }
+        catch (IOException e)
+        {
+            OutputLabel2.setText("Reconnecting");
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_dcBtnActionPerformed
 
     public static void main(String args[])
     {
-        EventQueue.invokeLater(new Runnable()
+        DictionaryClient myClient = new DictionaryClient();
+        myClient.InitializeArguments(myClient, args);
+        try
         {
-            public void run()
+            EventQueue.invokeLater(new Runnable()
             {
-                try
+                @Override
+                public void run()
                 {
-                    DictionaryClient myClient = new DictionaryClient();
                     myClient.setVisible(true);
-                    myClient.InitializeArguments(myClient, args);
+                    myClient.portTextBox.setText(Integer.toString(myClient.port));
+                    myClient.machineTextBox.setText(myClient.host);
                 }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        });
+            });
+            myClient.sc = new Socket(myClient.getHost(), myClient.getPort());
+
+        }
+        catch (Exception ex)
+        {
+            System.out.println("Cannot connect to the server!");
+        }
     }
 
 
@@ -553,6 +577,7 @@ public class DictionaryClient extends javax.swing.JFrame
     private javax.swing.JTextPane OutputLabel2;
     private javax.swing.JButton SearchBtn;
     private javax.swing.JTextField SearchwordField;
+    private javax.swing.JButton dcBtn;
     private javax.swing.JButton deleteWordBtn;
     private javax.swing.JDialog jDialog1;
     private javax.swing.JLabel jLabel1;
@@ -569,4 +594,5 @@ public class DictionaryClient extends javax.swing.JFrame
     private javax.swing.JButton pingBtn;
     private javax.swing.JTextField portTextBox;
     // End of variables declaration//GEN-END:variables
+
 }

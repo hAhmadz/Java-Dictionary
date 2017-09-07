@@ -6,59 +6,38 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import static java.lang.System.out;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Hashtable;
 import java.util.Set;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
 
 public class DictionaryServer extends Thread
 {
     private Hashtable DictionaryTable;
-    private static int counter = 0;
     ServerSocket soc;
     Socket conn;
-    ObjectOutputStream out;
-    ObjectInputStream in;
-    String message;
-
-    @Option(required = true, name = "-h", aliases =
-    {
-        "--host"
-    }, usage = "Hostname")
-    String host;
-
-    @Option(required = false, name = "-p", usage = "Port number")
+    String path;
     int port;
-
+    
     public void Initialize(DictionaryServer myServer, String[] args)
     {
-        CmdLineParser parser = new CmdLineParser(myServer);
-        try
+        if(args.length<2)
         {
-            parser.parseArgument(args);
-        }
-        catch (CmdLineException e)
-        {
-            System.err.println(e.getMessage());
-            parser.printUsage(System.err);
+            System.out.println("Insufficient arguments.");
             System.exit(0);
+        }
+        else
+        {
+            this.port = Integer.parseInt(args[0]);
+            this.path = args[1];
+            
         }
 
         this.DictionaryTable = new Hashtable();
-        DictionaryTable = getDictionaryState();
+        DictionaryTable = getDictionaryState(path);
     }
 
-    public void StopServer() throws IOException
-    {
-        soc.close();
-        conn.close();
-    }
-    
     public String AddWordRequest(String word, String meaning)
     {
         String decision = "";
@@ -114,10 +93,9 @@ public class DictionaryServer extends Thread
 
     public void saveDictionaryState(Hashtable DictionaryTable)
     {
-        String fileName = "Dictionary.txt";
         try
         {
-            FileWriter fileWriter = new FileWriter(fileName);
+            FileWriter fileWriter = new FileWriter(path);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
             Set<String> keys = DictionaryTable.keySet();
             for (String key : keys)
@@ -129,16 +107,16 @@ public class DictionaryServer extends Thread
         }
         catch (IOException ex)
         {
-            System.out.println("Error writing to file '" + fileName + "'");
+            System.out.println("Error writing to file");
         }
     }
 
-    public Hashtable getDictionaryState()
+    public Hashtable getDictionaryState(String path)
     {
         //retrieves the dictionary
         Hashtable tempTable = new Hashtable();
         String line = null;
-        String fileName = "Dictionary.txt";
+        String fileName = path;
         String key = "";
         String value = "";
         try
@@ -170,39 +148,23 @@ public class DictionaryServer extends Thread
         return tempTable;
     }
 
-    void sendMessage(String msg)
-    {
-        try
-        {
-            out.writeObject(msg);
-            out.flush();
-            System.out.println("server>" + msg);
-        }
-        catch (IOException ioException)
-        {
-            ioException.printStackTrace();
-        }
-    }
-
     public void StartServer(DictionaryServer myServer)
     {
         try
         {
             soc = new ServerSocket(port);
-            int counter = 0;
-            System.out.println("Server Started ....");
+            System.out.println("Server Running..");
             while (true)
             {
-                counter++;
                 conn = soc.accept();  //server accept the client connection request
-                System.out.println("Client sent a query");
-                myThread sct = new myThread(conn, counter, myServer); //send  the request to a separate thread
-                sct.start();
+                System.out.println("Client sends a query");
+                myThread t = new myThread(conn,myServer); //send  the request to a separate thread
+                t.start();
             }
         }
         catch (Exception e)
         {
-            System.out.println(e);
+            System.out.println("Cannot Connect");
         }
     }
 
